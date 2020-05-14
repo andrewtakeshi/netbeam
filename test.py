@@ -133,8 +133,8 @@ def getTrafficByTimeRange(resource="devices/wash-cr5/interfaces/to_wash-bert1_ip
                             unit = "Kbps"
 
                     print("Time:", time.asctime(time.localtime(int(trip[0]) / 1000)))
-                    print("\tIn:", (int(trip[1]) / div), unit)
-                    print("\tOut:", (int(trip[2]) / div), unit)
+                    print("\tIn:", (0 if trip[1] is None else int(trip[1])) / div, unit)
+                    print("\tOut:", (0 if trip[2] is None else int(trip[2])) / div, unit)
                     print()
     else:
         print(f"Error querying host: {r.status_code}")
