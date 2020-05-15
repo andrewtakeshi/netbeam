@@ -95,7 +95,44 @@ def getSAPS(filePath=None):
             f.write(f"{item['resource']}\n")
 
 
-def getTrafficByTimeRange(resource="devices/wash-cr5/interfaces/to_wash-bert1_ip-a"):
+def printTrafficData(inJson, units=True):
+    """
+    Prints out data collected by getTrafficByTimeRange.
+    :param inJson: Request json passed in (r = requests.get(...), printTrafficData(r.json))
+    :param units: Tells whether to print with units or not (currently only traffic gets units).
+    :return: Void.
+    """
+    first = True
+    div = 0
+    unit = ""
+
+    for k, v in inJson.items():
+        if k == 'points':
+            for trip in v:
+                # Set up the units properly.
+                if first and units:
+                    first = False
+                    if trip[1] > 1000 ** 3:
+                        div = 1000 ** 3
+                        unit = "Gbps"
+                    elif trip[1] > 1000 ** 2:
+                        div = 1000 ** 2
+                        unit = "Mbps"
+                    else:
+                        div = 1000
+                        unit = "Kbps"
+
+                print("\tTime:", time.asctime(time.localtime(int(trip[0]) / 1000)))
+
+                if units:
+                    print("\t\tIn:", (0 if trip[1] is None else int(trip[1])) / div, unit)
+                    print("\t\tOut:", (0 if trip[2] is None else int(trip[2])) / div, unit)
+                else:
+                    print("\t\tIn:", (0 if trip[1] is None else int(trip[1])))
+                    print("\t\tOut:", (0 if trip[2] is None else int(trip[2])))
+
+
+def getTrafficByTimeRange(resource: str = "devices/wash-cr5/interfaces/to_wash-bert1_ip-a", interval: str = "15m"):
     """
     Gets an interfaces traffic in a certain time range.
     :param resource: Only has a default value for testing purposes. This should be changed.
@@ -106,38 +143,41 @@ def getTrafficByTimeRange(resource="devices/wash-cr5/interfaces/to_wash-bert1_ip
     This will also work for SAPs. Resource for SAPs is devices/{host}/saps/{sap}.
     SAP resources can be gathered by looking at the file created by calling getSAPS(True). Same thing applies to SAPs as
     resources.
+    :param interval: Defaults to 15m. See timeInterval definition for acceptable time range formats.
     :return: Void. Prints values for the specified time interval in 30s increments.
     """
-    begin, end = timeInterval()
-    r = requests.get(f"{url}/api/network/esnet/prod/{resource}/traffic?begin={begin}&end={end}")
 
-    first = True
-    div = 0
-    unit = ""
+    # Request traffic, unicast packets, # discards, # errors through the API.
+    requestTypes = ["traffic", "unicast_packets", "discards", "errors"]
+    units = [True, False, False, False]
+    properNames = ["Traffic", "Unicast Packets", "Discards", "Errors"]
 
-    if r.status_code == 200:
-        for k, v in r.json().items():
-            if k == 'points':
-                for trip in v:
-                    # Set up the units properly.
-                    if first:
-                        first = False
-                        if trip[1] > 1000 ** 3:
-                            div = 1000 ** 3
-                            unit = "Gbps"
-                        elif trip[1] > 1000 ** 2:
-                            div = 1000 ** 2
-                            unit = "Mbps"
-                        else:
-                            div = 1000
-                            unit = "Kbps"
+    # API endpoint is nearly identical for all the different things; only differs @ requestType.
+    requestStr = lambda requestType: f"{url}/api/network/esnet/prod/{resource}/{requestType}?begin={begin}&end={end}"
 
-                    print("Time:", time.asctime(time.localtime(int(trip[0]) / 1000)))
-                    print("\tIn:", (0 if trip[1] is None else int(trip[1])) / div, unit)
-                    print("\tOut:", (0 if trip[2] is None else int(trip[2])) / div, unit)
-                    print()
-    else:
-        print(f"Error querying host: {r.status_code}")
+    begin, end = timeInterval(interval=interval)
+
+    for rInfo in zip(requestTypes, units, properNames):
+        r = requests.get(requestStr(rInfo[0]))
+
+        if r.status_code == 200:
+            print(rInfo[2])
+            printTrafficData(r.json(), rInfo[1])
+            print()
+        else:
+            print(f"Error querying host: {r.status_code}")
+
+
+def getTrafficByTimeRangeMultiple(resource: list, interval: str = "15m"):
+    """
+    Calls getTrafficByTimeRange on all the resources in the list passed in.
+    :param resource: List of strings corresponding to resources, same format as in getTrafficByTimeRange.
+    :param interval: Time range interval. Same format as getTrafficByTimeRange.
+    :return: Void.
+    """
+    for r in resource:
+        print(r)
+        getTrafficByTimeRange(resource=r, interval=interval)
 
 
 # Not useful anymore. I was going to do the scaling for units/divisor in getInterfaceTrafficByTimeRange here,
@@ -158,6 +198,3 @@ def getInterfaceInformation(resource, filePath="interfaceList.csv"):
             #     return int(1000 ** 2), "Mbps"
             # else:
             #     return int(1000 ** 3), "Gbps"
-
-
-getTrafficByTimeRange("devices/atla-cr5/saps/111-4%2F1%2F1-525")

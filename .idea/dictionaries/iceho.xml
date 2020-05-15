@@ -2,6 +2,7 @@
   <dictionary name="iceho">
     <words>
       <w>mult</w>
+      <w>unicast</w>
     </words>
   </dictionary>
 </component>
