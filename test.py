@@ -5,7 +5,6 @@ from os import path
 
 url = "https://netbeam.es.net"
 
-
 def timeInterval(interval="15m", startPoint=time.time()):
     """
     Takes a time interval and returns the unix time values (in ms) corresponding to the edges of the time interval.
@@ -167,6 +166,65 @@ def getTrafficByTimeRange(resource: str = "devices/wash-cr5/interfaces/to_wash-b
         else:
             print(f"Error querying host: {r.status_code}")
 
+#
+# def convertTZJson(jIn):
+#     for k, v in jIn.items():
+#         if k == 'points':
+#             for trip in v:
+#                 trip = (trip[0], trip[1], trip[2], time.asctime(time.localtime(int(trip[0]) / 1000)))
+#
+#     return jIn
+
+
+def getTrafficByTimeRangeFlask(resource: str = "devices/wash-cr5/interfaces/to_wash-bert1_ip-a", interval: str = "15m"):
+    """
+    Gets an interfaces traffic in a certain time range.
+    :param resource: Only has a default value for testing purposes. This should be changed.
+    Resource is specified in the format given by the API, i.e. devices/{host}/interfaces/{interface}.
+    Resources can be gathered by looking at the file created by calling getInterfaces(True). Interfaces without a link
+    speed aren't queryable (at least in my experience thus far), and calling getInterfaces(True) doesn't record the
+    interfaces without reported link speeds.
+    This will also work for SAPs. Resource for SAPs is devices/{host}/saps/{sap}.
+    SAP resources can be gathered by looking at the file created by calling getSAPS(True). Same thing applies to SAPs as
+    resources.
+    :param interval: Defaults to 15m. See timeInterval definition for acceptable time range formats.
+    :return: Void. Prints values for the specified time interval in 30s increments.
+    """
+
+    # Request traffic, unicast packets, # discards, # errors through the API.
+    requestTypes = ["traffic", "unicast_packets", "discards", "errors"]
+    units = [True, False, False, False]
+    properNames = ["Traffic", "Unicast Packets", "Discards", "Errors"]
+
+    # API endpoint is nearly identical for all the different things; only differs @ requestType.
+    requestStr = lambda requestType: f"{url}/api/network/esnet/prod/{resource}/{requestType}?begin={begin}&end={end}"
+
+    begin, end = timeInterval(interval=interval)
+
+    r1 = requests.get(requestStr(requestTypes[0]))
+    r2 = requests.get(requestStr(requestTypes[1]))
+    r3 = requests.get(requestStr(requestTypes[2]))
+    r4 = requests.get(requestStr(requestTypes[3]))
+
+    if r1.status_code == r2.status_code == r3.status_code == r4.status_code == 200:
+        # return {properNames[0]: convertTZJson(r1.json()), properNames[1]: convertTZJson(r2.json()),
+        #         properNames[2]: convertTZJson(r3.json()), properNames[3]: convertTZJson(r4.json())}
+        return {properNames[0]: r1.json(), properNames[1]: r2.json(),
+                properNames[2]: r3.json(), properNames[3]: r4.json()}
+    else:
+        return {'error': 'error'}
+
+    #
+    # for rInfo in zip(requestTypes, units, properNames):
+    #     r = requests.get(requestStr(rInfo[0]))
+    #
+    #     if r.status_code == 200:
+    #         print(rInfo[2])
+    #         printTrafficData(r.json(), rInfo[1])
+    #         print()
+    #     else:
+    #         print(f"Error querying host: {r.status_code}")
+
 
 def getTrafficByTimeRangeMultiple(resource: list, interval: str = "15m"):
     """
@@ -198,3 +256,41 @@ def getInterfaceInformation(resource, filePath="interfaceList.csv"):
             #     return int(1000 ** 2), "Mbps"
             # else:
             #     return int(1000 ** 3), "Gbps"
+
+# getInterfaces()
+# getTrafficByTimeRange()
+
+#
+# choices=[('15m','15m'), ('1h','1h'), ('6h','6h'), ('1d','1d')]
+# choices2=['15m', '1h', '6h', '1d']
+# for choice in choices:
+#     print(choice[0])
+
+# messages = {"hostname": 'asdfasdf', "timeperiod": '15m'}
+#
+# print(messages['hostname'])
+# print(messages['timeperiod'])
+
+output = getTrafficByTimeRangeFlask()
+
+# arr = set()
+# for item in output.items():
+#     if item[0] == 'Traffic':
+#         for k, v in item[1].items():
+#             if k == 'points':
+#                 for tv in v:
+#                     arr.add(tv[0])
+
+#
+# dict = {}
+# for item in output.items():
+#     print(item[1])
+#     for k, v in item[1].items():
+#         if k == 'points':
+#             for val in v:
+#                 if val[0] not in dict.keys():
+#                     dict[val[0]] = list()
+#                 dict[val[0]].append((val[1], val[2]))
+#
+# print(dict)
+# print(len(dict))

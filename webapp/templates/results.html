@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    {% for item in output %}
+    <div class="h-100 justify-content-center align-items-center">
+        <div class="col">
+            <table class="table table-hover table-bordered table-light">
+                <thead class="thead-light">
+                <tr>
+                    <th colspan="3">{{ item }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>Time</th>
+                    <th>In</th>
+                    <th>Out</th>
+                </tr>
+                {% for point in output[item]['points'] %}
+                <tr>
+                    <th>{{ point[0] | ctime }}</th>
+                    <th>{{ point[1] }}</th>
+                    <th>{{ point[2] }}</th>
+                </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-sm">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!--{{ output | getTimeVals | safe }},-->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+            labels: {{ output | getTimeVals | safe }},
+            datasets: [{
+                label: 'Traffic In',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+                {label: 'Traffic Out',
+                    backgroundColor: 'rgb(255, 24, 140)',
+                    borderColor: 'rgb(255, 24, 140)',
+                    data: []
+            }]
+        },
+
+        // Configuration options go here
+        options: {}
+    });
+</script>
+
+
+{% endblock content %}
