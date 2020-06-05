@@ -207,23 +207,10 @@ def getTrafficByTimeRangeFlask(resource: str = "devices/wash-cr5/interfaces/to_w
     r4 = requests.get(requestStr(requestTypes[3]))
 
     if r1.status_code == r2.status_code == r3.status_code == r4.status_code == 200:
-        # return {properNames[0]: convertTZJson(r1.json()), properNames[1]: convertTZJson(r2.json()),
-        #         properNames[2]: convertTZJson(r3.json()), properNames[3]: convertTZJson(r4.json())}
         return {properNames[0]: r1.json(), properNames[1]: r2.json(),
                 properNames[2]: r3.json(), properNames[3]: r4.json()}
     else:
         return {'error': 'error'}
-
-    #
-    # for rInfo in zip(requestTypes, units, properNames):
-    #     r = requests.get(requestStr(rInfo[0]))
-    #
-    #     if r.status_code == 200:
-    #         print(rInfo[2])
-    #         printTrafficData(r.json(), rInfo[1])
-    #         print()
-    #     else:
-    #         print(f"Error querying host: {r.status_code}")
 
 
 def getTrafficByTimeRangeMultiple(resource: list, interval: str = "15m"):
@@ -273,24 +260,61 @@ def getInterfaceInformation(resource, filePath="interfaceList.csv"):
 
 output = getTrafficByTimeRangeFlask()
 
-# arr = set()
-# for item in output.items():
-#     if item[0] == 'Traffic':
-#         for k, v in item[1].items():
-#             if k == 'points':
-#                 for tv in v:
-#                     arr.add(tv[0])
+print(output)
+
+def unixtolocaltimereduced(s):
+    return time.strftime("%H:%M:%S", time.localtime(int(s) / 1000))
+
+
+retVal = set()
+for item in output.items():
+    for k, v in item[1].items():
+        if k == 'points':
+            for point in v:
+                retVal.add(unixtolocaltimereduced(point[0]))
+
+print(retVal)
+print(len(retVal))
+
+retVal = []
+for item in output.items():
+    if item[0] == "Traffic":
+        for k, v in item[1].items():
+            if k == 'points':
+                for point in v:
+                    if point[1] is None:
+                        retVal.append(f'{{x: {point[0]}, y: 0}}')
+                    else:
+                        retVal.append(f'{{x: {point[0]}, y: {point[1]}}}')
+
+print(retVal)
+print(len(retVal))
 
 #
-# dict = {}
-# for item in output.items():
-#     print(item[1])
-#     for k, v in item[1].items():
-#         if k == 'points':
-#             for val in v:
-#                 if val[0] not in dict.keys():
-#                     dict[val[0]] = list()
-#                 dict[val[0]].append((val[1], val[2]))
 #
-# print(dict)
-# print(len(dict))
+# def unixtolocaltimereduced(s):
+#     return time.strftime("%H:%M:%S", time.localtime(int(s) / 1000))
+#
+#
+# def getTimeValues(output):
+#     retVal = set()
+#
+#     for item in output.items():
+#         # if item[0] != 'Traffic':
+#         if item[0] == 'Discards':
+#             for k, v in item[1].items():
+#                 if k == 'points':
+#                     for point in v:
+#                         retVal.add(unixtolocaltimereduced(point[0]))
+#
+#     # for item in output.items():
+#     #     for k, v in item[1].items():
+#     #         if k == 'points':
+#     #             for point in v:
+#     #                 retVal.add(unixtolocaltimereduced(point[0]))
+#
+#     return sorted(retVal)
+#
+# thing = getTimeValues(output)
+#
+# print(thing)

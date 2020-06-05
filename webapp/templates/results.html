@@ -20,8 +20,16 @@
                 {% for point in output[item]['points'] %}
                 <tr>
                     <th>{{ point[0] | ctime }}</th>
-                    <th>{{ point[1] }}</th>
-                    <th>{{ point[2] }}</th>
+                    {% if point[1] %}
+                        <th>{{ point[1] }}</th>
+                    {% else %}
+                        <th>0</th>
+                    {% endif %}
+                    {% if point[2] %}
+                        <th>{{ point[2] }}</th>
+                    {% else %}
+                        <th>0</th>
+                    {% endif %}
                 </tr>
                 </tbody>
                 {% endfor %}
@@ -40,35 +48,120 @@
     </div>
 </div>
 
-<!--{{ output | getTimeVals | safe }},-->
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-sm">
+            <canvas id="chart2"></canvas>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script>
     var ctx = document.getElementById('myChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
 
-        // The data for our dataset
+    var myChart = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: {{ output | getTimeVals | safe }},
+            // labels: {{ output | getTrafficTime | safe }},
             datasets: [{
                 label: 'Traffic In',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            },
-                {label: 'Traffic Out',
-                    backgroundColor: 'rgb(255, 24, 140)',
-                    borderColor: 'rgb(255, 24, 140)',
-                    data: []
-            }]
+                backgroundColor: 'rgb(0,32,222)',
+                borderColor: 'rgb(0,32,222)',
+                data: {{ output | getInTraffic | safe }}, }]
+            // }, {
+            //     label: 'Traffic Out',
+            //     data: {{ output | getOutTraffic | safe }},
+            //     backgroundColor: 'rgb(170,0,27)',
+            //     borderColor: 'rgb(170,0,27)',
+            // }]
         },
+    options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Network Traffic'
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Octets'
+                    }
+                }]
+            },
+        }
+    });
 
-        // Configuration options go here
-        options: {}
+    var ctx2 = document.getElementById('chart2').getContext('2d');
+    var chart2 = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: {{output | getOtherTime | safe }},
+            datasets: [{
+                        label: 'Errors In',
+                        backgroundColor: 'rgb(0,32,222)',
+                        borderColor: 'rgb(0,32,222)',
+                        data: {{ output | getInErrors | safe }},
+                    }, {
+                        label: 'Errors Out',
+                        data: {{ output | getOutErrors | safe }},
+                        backgroundColor: 'rgb(170,0,27)',
+                        borderColor: 'rgb(170,0,27)',
+                    }, {
+                        label: 'Discards In',
+                        data: {{ output | getInDiscards | safe }},
+                        backgroundColor: 'rgb(6,157,186)',
+                        borderColor: 'rgb(100,100,100)',
+                    }, {
+                        label: 'Discards Out',
+                        data: {{ output | getOutDiscards | safe }},
+                        backgroundColor: 'rgb(198,104,119)',
+                        borderColor: 'rgb(198,104,119)',
+                    }]
+        },
+    options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Other Network Information'
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: false,
+                        labelString: '#'
+                    }
+                }]
+            },
+        }
     });
 </script>
+
 
 
 {% endblock content %}

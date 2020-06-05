@@ -20,6 +20,8 @@ def index():
 def results(hostname, timeperiod):
     print("Inside of results")
 
+
+
     outputDict = getTrafficByTimeRangeFlask(hostname, timeperiod)
 
     return render_template('results.html', output=outputDict)
