@@ -1,22 +1,54 @@
 function formLogger(form)
 {
-    var text = "";
-    for (var i = 0; i < form.length; i++)
+    if (validate(form))
     {
-        if (form.elements[i].tagName != "BUTTON")
+        let text = "";
+        for (let i = 0; i < form.length; i++) {
+            if (form.elements[i].tagName != "BUTTON") {
+                text += form.elements[i].name + ": " + form.elements[i].value + "\n";
+            }
+        }
+        console.log(text);
+    }
+}
+
+function validate(form)
+{
+    let accepted = true;
+    for (let i = 0; i < form.length; i++)
+    {
+        if (form.elements[i].tagName == "INPUT")
         {
-            text += form.elements[i].name + ": " + form.elements[i].value + "\n";
+
+            let name = form.elements[i].id;
+            let spanName = name + "_warn";
+            if (form.elements[i].value == "")
+            {
+                accepted = false;
+                document.getElementById(spanName).hidden = false;
+            }
+            else
+            {
+                document.getElementById(spanName).hidden = true;
+            }
         }
     }
-    console.log(text);
+
+    return accepted;
 }
 
 function resetForms()
 {
-    var forms = $("form");
-    for (var i = 0; i < forms.length; i++)
+    let forms = $("form");
+    for (let i = 0; i < forms.length; i++)
     {
         forms[i].reset();
+    }
+
+    let warnings = $("[name='warn']");
+    for (let i = 0; i < warnings.length; i++)
+    {
+        warnings[i].hidden = true;
     }
 }
 

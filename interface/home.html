@@ -50,7 +50,17 @@
                             <input type="text" name="esmond_ip_dest" id="esmond_ip_dest" placeholder="2.2.2.2" class="form-control">
                         </div>
                     </div>
-                    <button id="esmond_btn" name="esmond_btn" onclick="formLogger(esmond_form)" type="submit" class="btn btn-light">Generate Traceroute</button>
+                    <div class="form-row">
+                        <span class="form-group col-md-6" id="esmond_ip_source_warn" hidden="true" style="color: #ff0000;" name="warn">
+                            IP Source must have a value.
+                        </span>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-group col-md-6" id="esmond_ip_dest_warn" hidden="true" style="color:red;" name="warn">
+                            IP Destination must have a value.
+                        </span>
+                    </div>
+                    <button id="esmond_btn" name="esmond_btn" onclick="formLogger(this.form)" type="submit" class="btn btn-light">Generate Traceroute</button>
                 </form>
             </div>
 
@@ -75,7 +85,12 @@
                             <input type="text" name="implementation_dest" id="implementation_dest" placeholder="google.com" class="form-control">
                         </div>
                     </div>
-                    <button id="implementation_btn" name="implementation_btn" onclick="formLogger(implementation_form)" type="submit" class="btn btn-light">Generate Traceroute</button>
+                    <div class="form-row">
+                        <span class="form-group col-md-6" id="implementation_dest_warn" hidden="true" style="color: red;" name="warn">
+                            Destination must have a value.
+                        </span>
+                    </div>
+                    <button id="implementation_btn" name="implementation_btn" onclick="formLogger(this.form)" type="submit" class="btn btn-light">Generate Traceroute</button>
                 </form>
             </div>
 
@@ -88,13 +103,13 @@
             <div id="d3_vis">
                 <!-- Placeholder for actual visualization -->
             </div>
-            <div class="row" hidden="true" style="margin-top: 10px;">
-                <button id="refresh_vis_btn" class="btn btn-light"></button>
-                <button id="color_networks_btn" class="btn btn-light"></button>
-            </div>
+<!--            <div class="row" hidden="true" style="margin-top: 10px;">-->
+<!--                <button id="refresh_vis_btn" class="btn btn-light"></button>-->
+<!--                <button id="color_networks_btn" class="btn btn-light"></button>-->
+<!--            </div>-->
         </div>
 
-        <div id="config_area" style="margin-top: 25px;">
+        <div id="config_area" style="margin-top: 25px; margin-bottom: 50px;">
             <div class="d-flex justify-content-center">
                 <h2>Configuration</h2>
             </div>
@@ -129,10 +144,14 @@
                             <option value="random">Random</option>
                         </select>
                     </div>
+                    <div class="form-row btn-group" style="margin-top: 10px;">
+                        <button id="refresh_vis_btn" class="btn btn-outline-primary" onclick="formLogger(this.form)">Refresh Visualisation</button>
+                        <button id="color_networks_btn" class="btn btn-outline-primary" onclick="formLogger(this.form)">Color Networks</button>
+                    </div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <button id="reset_config_btn" class="btn btn-danger w-100" onclick="resetForms()">Reset</button>
+                    </div>
                 </form>
-            </div>
-            <div class="d-flex justify-content-center">
-                <button id="reset_config_btn" class="btn btn-danger">Reset</button>
             </div>
         </div>
 
