@@ -24,7 +24,10 @@
             rel="stylesheet"
             integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
             crossorigin="anonymous">
+<!--        <link href="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js">-->
+<!--        <link href="https://cdn.jsdelivr.net/npm/xmlhttprequest@1.8.0/lib/XMLHttpRequest.min.js">-->
         <script src="home.js"></script>
+
 
         <title>Parallel Traceroute</title>
     </head>
@@ -32,7 +35,14 @@
     <body>
         <div id="navbar_area">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="#">Parallel Traceroute</a>
+                <a class="navbar-brand" href="./home.html">Parallel Traceroute</a>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="./netbeam.html">Netbeam Test</a>
+                        </li>
+                    </ul>
+                </div>
             </nav>
         </div>
 
@@ -109,7 +119,7 @@
 <!--            </div>-->
         </div>
 
-        <div id="config_area" style="margin-top: 25px; margin-bottom: 50px;">
+        <div id="config_area" style="margin-top: 25px; margin-bottom: 50px;" class="container">
             <div class="d-flex justify-content-center">
                 <h2>Configuration</h2>
             </div>
@@ -154,6 +164,5 @@
                 </form>
             </div>
         </div>
-
     </body>
 </html>
