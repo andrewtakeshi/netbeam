@@ -23,6 +23,12 @@ def check_pscheduler(endpoint):
 
 
 def get_source_info(source):
+    """
+    Pings the source address to get an IP address.
+    Returns JSON formatted to match that returned by *_to_d3 defs.
+    :param source:
+    :return:
+    """
     ping_process = subprocess.run(['ping', '-c', '1', source], stdout=subprocess.PIPE, universal_newlines=True)
     line = ping_process.stdout.splitlines()[0]
     re_res = re.search(r'([0-9]{1,3}\.){3}[0-9]{1,3}', line)
@@ -182,12 +188,22 @@ def system_to_d3(dest, numRuns = 1):
     sys.stdout.write(output)
 
 
-def system_copy_to_d3(strIn):
+def system_copy_to_d3(dataIn):
+    """
+    Takes a previously run traceroute and creates the appropriate JSON.
+    Does not include source information (as source information is not provided by system traceroute).
+    Accepts both Linux and Windows traceroute formats.
+    :param dataIn: Copied traceroute information.
+    :return: JSON ingestible by the d3 visualisation.
+    """
     output = []
+
     i = -1
+
     linux = True
 
-    for line in strIn.splitlines():
+    for line in dataIn.splitlines():
+        # For processing multiple traceroutes (i.e. pasting multiple runs in at once)
         if line.__contains__("Tracing") or line.__contains__("traceroute"):
             i += 1
             output.append(dict())
@@ -196,7 +212,7 @@ def system_copy_to_d3(strIn):
 
             output[i]["ts"] = int(time.time())
             output[i]["val"] = []
-        if re.match(r'^\s*[0-9]+\s+', line):
+        if re.match('^\s*[0-9]+\s+', line):
             split = line.split()
 
             # Common to all items in the traceroute path.
@@ -206,53 +222,58 @@ def system_copy_to_d3(strIn):
                 "ttl": int(split[0])
             }
             # Server didn't reply; same thing for both Linux and Windows
-            if re.match(r"No|\*", split[1]):
+            if re.match("No|\*", split[1]):
                 output[i]["val"].append(toAdd)
 
-                # Server replied; additional information available
+            # Server replied; additional information available
             else:
                 # Linux traceroute format
                 if linux:
                     ip = ""
-                    if re.match(r'([0-9]{1,3}\.){3}[0-9]{1,3}', split[1]):
+                    if re.match('([0-9]{1,3}\.){3}[0-9]{1,3}', split[1]):
                         ip = split[1]
                     else:
-                        ip = re.sub(r"\(|\)", "", split[2])
+                        ip = re.sub("\(|\)", "", split[2])
 
-                    rttArr = re.findall(r"[0-9]+\.?[0-9]+ ms", line)
+                    rttArr = re.findall("[0-9]+\.?[0-9]+ ms", line)
                     rtt = 0
-                for response in rttArr:
-                    rtt += float(re.sub(r"[ms]", "", response))
-                rtt /= len(rttArr)
+                    for response in rttArr:
+                        rtt += float(re.sub("[ms]", "", response))
+                    rtt /= len(rttArr)
 
-                toAdd["ip"] = ip
-                toAdd["rtt"] = rtt.__round__(3)
-                output[i]["val"].append(toAdd)
-        # Windows traceroute format
-        else:
-            # Case where hostname is found
-            if len(split) == 9:
-                toAdd["ip"] = re.sub(r"\[|\]", "", split[8])
-                # Case where only IP is used
-            else:
-                toAdd["ip"] = split[7]
+                    toAdd["ip"] = ip
+                    toAdd["rtt"] = rtt.__round__(3)
+                    output[i]["val"].append(toAdd)
 
-            rttArr = re.findall(r"\<?[0-9]+ ms", line)
-            rtt = 0
-            for response in rttArr:
-                response = re.sub(r"ms|<", "", response)
-                rtt += float(response)
-            rtt /= len(rttArr)
+                # Windows traceroute format
+                else:
+                    # Case where hostname is found
+                    if len(split) == 9:
+                        toAdd["ip"] = re.sub("\[|\]", "", split[8])
+                    # Case where only IP is used
+                    else:
+                        toAdd["ip"] = split[7]
 
-            toAdd["rtt"] = rtt.__round__(3)
-            output[i]["val"].append(toAdd)
+                    rttArr = re.findall("\<?[0-9]+ ms", line)
+                    rtt = 0
+                    for response in rttArr:
+                        response = re.sub("ms|<", "", response)
+                        rtt += float(response)
+                    rtt /= len(rttArr)
+
+                    toAdd["rtt"] = rtt.__round__(3)
+                    output[i]["val"].append(toAdd)
 
     output = json.dumps(output)
-    sys.stdout.write(output)
+    return output
+
+input = ""
+
+for line in sys.stdin.readlines():
+    input += line
 
 
-print(pscheduler_to_d3('dtn01-dmz.chpc.utah.edu', 'google.com', 10))
-print(system_to_d3('google.com', 2))
+print(system_copy_to_d3(input))
 # source_process = subprocess.run(['curl', 'ifconfig.me'],
 #                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True).stdout.splitlines()[0]
 # print(source_process)
