@@ -1,0 +1,38 @@
+<!--{% extends "base.html" %}-->
+
+{% block content %}
+    {% for item in output %}
+        <table class="table table-hover table-bordered table-light">
+            <thead class="thead-light">
+                <th>TTL</th>
+                <th>IP</th>
+                <th>RTT</th>
+            </thead>
+        {% for tr in item %}
+            <tbody>
+            {% if tr == 'val' %}
+                {% for val in item[tr] %}
+                    <tr>
+                        <td>{{ val['ttl'] }}</td>
+                        {% if val['ip'] %}
+                            <td>{{ val['ip'] }}</td>
+                        {% else %}
+                            <td>None</td>
+                        {% endif %}
+                        {% if val['rtt'] %}
+                            <td>{{ val['rtt'] }}</td>
+                        {% elif val['rtt'] == 0 %}
+                            <td>{{ val['rtt'] }}</td>
+                        {% else %}
+                            <td>None</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        {% endfor %}
+        </table>
+    {% endfor %}
+{% endblock %}
+
+

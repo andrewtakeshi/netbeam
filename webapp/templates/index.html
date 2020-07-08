@@ -5,23 +5,15 @@
 <br>
 <div class="row h-100 justify-content-center align-items-center">
     <div class="col-lg-6">
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                <label for="hostname">Enter Resource Name:</label>
-                <input class="form-control" id="hostname" name="hostname" placeholder="">
-                <small id="hostnameHelp" class="form-text text-muted">Resource names are something like
-                    "devices/wash-cr5/interfaces/to_wash-bert1_ip-a"</small>
-            </div>
-            <div class="form-group">
-                <label for="timeperiod">Select Time Period:</label>
-                <select class="form-control" id="timeperiod" name="timeperiod">
-                    {% for item in form.timeperiod.choices %}
-                    <option value={{ item[0] }}>{{ item[1] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <p>{{ form.submitBtn() }}</p>
+
+        <form action="{{ url_for('pscheduler_query') }}" method="post">
+            <label for="pscheduler_source">Pscheduler Source:</label>
+            <input class="form-control" id="pscheduler_source" name="pscheduler_source" placeholder="ex. dtn01-dmz.chpc.utah.edu">
+            <label for="pscheduler_dest">Pscheduler Destination:</label>
+            <input class="form-control" id="pscheduler_dest" name="pscheduler_dest" placeholder="ex. google.com">
+            <label for="numRuns">Number of traceroutes to run:</label>
+            <input class="form-control" id="numRuns" name="numRuns" value="1" type="number" max=10 min=1>
+            {{ form.submitBtn() }}
         </form>
     </div>
 </div>

@@ -6,7 +6,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "supersecretsecretkey"
 Bootstrap(app)
 
-
 @app.template_filter('ctime')
 def unixtolocaltime(s):
     return time.asctime(time.localtime(int(s) / 1000))

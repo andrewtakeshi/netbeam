@@ -41,7 +41,6 @@ def get_source_info(source):
         "rtt": 0
     }
 
-
 def pscheduler_to_d3(source, dest, numRuns = 1):
     """
     Tries to run a pScheduler traceroute from source to destination.
